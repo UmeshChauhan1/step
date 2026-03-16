@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L1QE9XKPJW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-L1QE9XKPJW');
+</script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>My Account — StepStyle</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .account-container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+    .account-grid { display: grid; grid-template-columns: 250px 1fr; gap: 2rem; margin-top: 2rem; }
+    .sidebar { background: var(--gray); padding: 1.5rem; border-radius: 12px; height: fit-content; border: 1px solid var(--gray-mid); }
+    .sidebar-menu { list-style: none; }
+    .sidebar-menu li { margin-bottom: .5rem; }
+    .sidebar-menu a { display: block; padding: .75rem 1rem; border-radius: 8px; color: var(--white); text-decoration: none; transition: all 0.2s; }
+    .sidebar-menu a:hover, .sidebar-menu a.active { background: var(--green); color: var(--black); font-weight: 600; }
+    .content-section { display: none; }
+    .content-section.active { display: block; }
+    .card { background: var(--gray); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--gray-mid); margin-bottom: 1.5rem; }
+    .card h2 { font-size: 1.1rem; margin-bottom: 1rem; font-weight: 600; }
+    .profile-field { margin-bottom: 1rem; }
+    .profile-field label { font-size: .9rem; font-weight: 500; display: block; margin-bottom: .25rem; }
+    .profile-field input, .profile-field select { width: 100%; padding: .75rem; border: 1px solid var(--gray-mid); border-radius: 8px; background: var(--gray-mid); color: var(--white); font-size: .9rem; }
+    .profile-field input:disabled { opacity: 0.6; }
+    .profile-field input:focus, .profile-field select:focus { outline: none; border-color: var(--green); }
+    .button-group { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .btn-primary { padding: .75rem 1.5rem; background: var(--green); color: var(--black); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn-primary:hover { background: #2dd657; }
+    .btn-secondary { padding: .75rem 1.5rem; background: var(--gray-mid); color: var(--white); border: 1px solid var(--gray-mid); border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn-secondary:hover { border-color: var(--green); }
+    .btn-danger { padding: .75rem 1.5rem; background: #ff4d4d; color: var(--white); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn-danger:hover { background: #ff3333; }
+    .address-card { background: var(--gray-mid); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 2px solid transparent; transition: all 0.2s; }
+    .address-card:hover { border-color: var(--green); }
+    .address-card p { margin: .25rem 0; font-size: .9rem; }
+    .address-actions { margin-top: .75rem; display: flex; gap: .5rem; }
+    .address-actions button { padding: .5rem 1rem; font-size: .85rem; border: none; border-radius: 6px; cursor: pointer; }
+    .address-actions .edit-btn { background: var(--green); color: var(--black); }
+    .address-actions .delete-btn { background: #ff4d4d; color: var(--white); }
+    .order-card { background: var(--gray-mid); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+    .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
+    .order-id { font-weight: 600; color: var(--green); }
+    .order-status { padding: .25rem .75rem; border-radius: 4px; font-size: .85rem; }
+    .status-pending { background: #ffaa00; color: var(--black); }
+    .status-confirmed { background: #4daaff; color: var(--white); }
+    .status-processing { background: #aa4dff; color: var(--white); }
+    .status-shipped { background: #4dff4d; color: var(--black); }
+    .status-delivered { background: var(--green); color: var(--black); }
+    .order-items { font-size: .9rem; color: var(--gray-light); margin: .5rem 0; }
+    .order-footer { display: flex; justify-content: space-between; align-items: center; }
+    .order-total { font-weight: 600; }
+    .order-link { color: var(--green); text-decoration: none; font-size: .9rem; }
+    .checkbox-group { display: flex; gap: 2rem; margin-top: 1rem; flex-wrap: wrap; }
+    .checkbox-group label { display: flex; align-items: center; gap: .5rem; cursor: pointer; }
+    .checkbox-group input[type="checkbox"] { cursor: pointer; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-box { background: var(--gray-mid); padding: 1.5rem; border-radius: 8px; text-align: center; }
+    .stat-box .number { font-size: 2rem; font-weight: 600; color: var(--green); }
+    .stat-box .label { font-size: .9rem; color: var(--gray-light); margin-top: .5rem; }
+    @media (max-width: 768px) { .account-grid { grid-template-columns: 1fr; } .stats { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="logo" href="index.html">STEP<span>STYLE</span></a>
+  <ul class="nav-links"><li><a href="index.html">Home</a></li><li><a href="shop.html">Shop</a></li><li><a href="cart.html">🛒 Cart</a></li></ul>
+  <div class="nav-icons"><button class="hamburger" id="hamburger"><span></span><span></span><span></span></button></div>
+</nav>
+<ul class="mobile-nav" id="mobileNav"><li><a href="index.html">Home</a></li><li><a href="shop.html">Shop</a></li><li><a href="cart.html">🛒 Cart</a></li></ul>
+
+<div class="account-container">
+  <h1>My Account</h1>
+  
+  <div class="account-grid">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <ul class="sidebar-menu">
+        <li><a href="#" class="menu-link active" data-section="profile">Profile</a></li>
+        <li><a href="#" class="menu-link" data-section="addresses">Addresses</a></li>
+        <li><a href="#" class="menu-link" data-section="orders">Orders</a></li>
+        <li><a href="#" class="menu-link" data-section="preferences">Preferences</a></li>
+        <li><a href="#" class="menu-link" data-section="security">Security</a></li>
+        <li><a href="#" id="logoutBtn" style="color:#ff4d4d">Logout</a></li>
+      </ul>
+    </aside>
+    
+    <!-- Content -->
+    <main>
+      <!-- Profile Section -->
+      <section id="profile" class="content-section active">
+        <div class="card">
+          <h2>Profile Information</h2>
+          
+          <div class="profile-field">
+            <label>Full Name</label>
+            <input type="text" id="nameInput" disabled/>
+          </div>
+          
+          <div class="profile-field">
+            <label>Email</label>
+            <input type="email" id="emailInput" disabled/>
+          </div>
+          
+          <div class="profile-field">
+            <label>Phone</label>
+            <input type="tel" id="phoneInput"/>
+          </div>
+          
+          <div class="button-group">
+            <button class="btn-primary" id="editProfileBtn">Edit Profile</button>
+            <button class="btn-primary" id="saveProfileBtn" style="display:none">Save Changes</button>
+            <button class="btn-secondary" id="cancelProfileBtn" style="display:none">Cancel</button>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h2>Account Statistics</h2>
+          <div class="stats">
+            <div class="stat-box">
+              <div class="number" id="totalOrdersNum">0</div>
+              <div class="label">Total Orders</div>
+            </div>
+            <div class="stat-box">
+              <div class="number" id="totalSpentNum">₹0</div>
+              <div class="label">Total Spent</div>
+            </div>
+            <div class="stat-box">
+              <div class="number" id="loyaltyPointsNum">0</div>
+              <div class="label">Loyalty Points</div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Addresses Section -->
+      <section id="addresses" class="content-section">
+        <div class="card">
+          <h2>My Addresses</h2>
+          <div id="addressesList"></div>
+          <button class="btn-primary" id="addAddressBtn">+ Add New Address</button>
+        </div>
+        
+        <div class="card" id="addressFormCard" style="display:none">
+          <h2>Add New Address</h2>
+          <div class="profile-field"><label>Full Name</label><input type="text" id="addrName"/></div>
+          <div class="profile-field"><label>Phone</label><input type="tel" id="addrPhone"/></div>
+          <div class="profile-field"><label>Address Line 1</label><input type="text" id="addrLine1"/></div>
+          <div class="profile-field"><label>Address Line 2</label><input type="text" id="addrLine2"/></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div class="profile-field"><label>City</label><input type="text" id="addrCity"/></div>
+            <div class="profile-field"><label>State</label><input type="text" id="addrState"/></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div class="profile-field"><label>Postal Code</label><input type="text" id="addrZip"/></div>
+            <div class="profile-field"><label>Country</label><input type="text" id="addrCountry" value="India"/></div>
+          </div>
+          <div class="button-group">
+            <button class="btn-primary" id="saveAddressBtn">Save Address</button>
+            <button class="btn-secondary" id="cancelAddressBtn">Cancel</button>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Orders Section -->
+      <section id="orders" class="content-section">
+        <div class="card">
+          <h2>Order History</h2>
+          <div id="ordersList"></div>
+        </div>
+      </section>
+      
+      <!-- Preferences Section -->
+      <section id="preferences" class="content-section">
+        <div class="card">
+          <h2>Email Preferences</h2>
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="wishlistNotif"/> Wishlist Notifications</label>
+            <label><input type="checkbox" id="emailNotif"/> Email Notifications</label>
+            <label><input type="checkbox" id="orderUpdates"/> Order Updates</label>
+            <label><input type="checkbox" id="promotionalEmails"/> Promotional Emails</label>
+          </div>
+          <button class="btn-primary" id="savePrefBtn" style="margin-top:1.5rem">Save Preferences</button>
+        </div>
+      </section>
+      
+      <!-- Security Section -->
+      <section id="security" class="content-section">
+        <div class="card">
+          <h2>Change Password</h2>
+          <div class="profile-field">
+            <label>Current Password</label>
+            <input type="password" id="currentPwd"/>
+          </div>
+          <div class="profile-field">
+            <label>New Password</label>
+            <input type="password" id="newPwd"/>
+          </div>
+          <div class="profile-field">
+            <label>Confirm New Password</label>
+            <input type="password" id="confirmPwd"/>
+          </div>
+          <button class="btn-primary" id="changePwdBtn">Change Password</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/core.js"></script>
+<script>
+  // Check auth
+  if (!window.checkAuth()) {
+    window.location.href = 'login.html';
+  }
+  
+  // Menu navigation
+  document.querySelectorAll('.menu-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const section = link.dataset.section;
+      
+      document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+      
+      document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+      document.getElementById(section).classList.add('active');
+      
+      if (section === 'orders') loadOrders();
+      if (section === 'addresses') loadAddresses();
+    });
+  });
+  
+  // Load user profile
+  async function loadProfile() {
+    try {
+      const user = await APIs.user.getProfile();
+      document.getElementById('nameInput').value = user.name;
+      document.getElementById('emailInput').value = user.email;
+      document.getElementById('phoneInput').value = user.phone || '';
+      
+      const stats = await APIs.user.getStats();
+      document.getElementById('totalOrdersNum').textContent = stats.totalOrders || 0;
+      document.getElementById('totalSpentNum').textContent = '₹' + ((stats.totalSpent || 0).toLocaleString('en-IN'));
+      document.getElementById('loyaltyPointsNum').textContent = stats.loyaltyPoints || 0;
+      
+      // Load preferences
+      document.getElementById('wishlistNotif').checked = user.preferences?.wishlistNotifications || false;
+      document.getElementById('emailNotif').checked = user.preferences?.emailNotifications || false;
+      document.getElementById('orderUpdates').checked = user.preferences?.orderUpdates || false;
+      document.getElementById('promotionalEmails').checked = user.preferences?.promotionalEmails || false;
+    } catch (err) {
+      showToast('Failed to load profile: ' + err.message, 'error');
+    }
+  }
+  
+  // Load addresses
+  async function loadAddresses() {
+    try {
+      const user = await APIs.user.getProfile();
+      const container = document.getElementById('addressesList');
+      container.innerHTML = '';
+      
+      user.addresses.forEach(addr => {
+        const div = document.createElement('div');
+        div.className = 'address-card';
+        div.innerHTML = `
+          <p><strong>${addr.name}</strong> ${addr.phone}</p>
+          <p>${addr.line1}, ${addr.line2 || ''}</p>
+          <p>${addr.city}, ${addr.state} ${addr.zip}</p>
+          <div class="address-actions">
+            <button class="edit-btn" onclick="editAddress('${addr._id}')">Edit</button>
+            <button class="delete-btn" onclick="deleteAddress('${addr._id}')">Delete</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    } catch (err) {
+      showToast('Failed to load addresses: ' + err.message, 'error');
+    }
+  }
+  
+  // Load orders
+  async function loadOrders() {
+    try {
+      const orders = await APIs.orders.getAll();
+      const container = document.getElementById('ordersList');
+      container.innerHTML = '';
+      
+      if (orders.length === 0) {
+        container.innerHTML = '<p style="color:var(--gray-light)">No orders yet.</p>';
+        return;
+      }
+      
+      orders.forEach(order => {
+        const div = document.createElement('div');
+        div.className = 'order-card';
+        
+        const statusClass = `status-${order.status.toLowerCase()}`;
+        const itemCount = order.items?.length || 0;
+        
+        div.innerHTML = `
+          <div class="order-header">
+            <div class="order-id">${order.orderId}</div>
+            <span class="order-status ${statusClass}">${order.status}</span>
+          </div>
+          <div class="order-items">${itemCount} item(s) • ₹${(order.total || 0).toLocaleString('en-IN')}</div>
+          <div class="order-footer">
+            <span>${new Date(order.createdAt).toLocaleDateString()}</span>
+            <a href="order-tracking.html?id=${order._id}" class="order-link">View Details →</a>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    } catch (err) {
+      showToast('Failed to load orders: ' + err.message, 'error');
+    }
+  }
+  
+  // Edit profile
+  document.getElementById('editProfileBtn').onclick = () => {
+    document.getElementById('phoneInput').disabled = false;
+    document.getElementById('editProfileBtn').style.display = 'none';
+    document.getElementById('saveProfileBtn').style.display = 'inline-block';
+    document.getElementById('cancelProfileBtn').style.display = 'inline-block';
+  };
+  
+  document.getElementById('cancelProfileBtn').onclick = () => {
+    loadProfile();
+    document.getElementById('phoneInput').disabled = true;
+    document.getElementById('editProfileBtn').style.display = 'inline-block';
+    document.getElementById('saveProfileBtn').style.display = 'none';
+    document.getElementById('cancelProfileBtn').style.display = 'none';
+  };
+  
+  document.getElementById('saveProfileBtn').onclick = async () => {
+    try {
+      await APIs.user.updateProfile({ phone: document.getElementById('phoneInput').value });
+      showToast('Profile updated!', 'success');
+      loadProfile();
+      document.getElementById('phoneInput').disabled = true;
+      document.getElementById('editProfileBtn').style.display = 'inline-block';
+      document.getElementById('saveProfileBtn').style.display = 'none';
+      document.getElementById('cancelProfileBtn').style.display = 'none';
+    } catch (err) {
+      showToast('Failed to update profile: ' + err.message, 'error');
+    }
+  };
+  
+  // Add address
+  document.getElementById('addAddressBtn').onclick = () => {
+    document.getElementById('addressFormCard').style.display = 'block';
+  };
+  
+  document.getElementById('cancelAddressBtn').onclick = () => {
+    document.getElementById('addressFormCard').style.display = 'none';
+    document.getElementById('addrName').value = '';
+  };
+  
+  document.getElementById('saveAddressBtn').onclick = async () => {
+    const addr = {
+      name: document.getElementById('addrName').value,
+      phone: document.getElementById('addrPhone').value,
+      line1: document.getElementById('addrLine1').value,
+      line2: document.getElementById('addrLine2').value,
+      city: document.getElementById('addrCity').value,
+      state: document.getElementById('addrState').value,
+      zip: document.getElementById('addrZip').value,
+      country: document.getElementById('addrCountry').value,
+      isDefault: false
+    };
+    
+    try {
+      await APIs.user.addAddress(addr);
+      showToast('Address added!', 'success');
+      document.getElementById('addressFormCard').style.display = 'none';
+      document.getElementById('addrName').value = '';
+      loadAddresses();
+    } catch (err) {
+      showToast('Failed to add address: ' + err.message, 'error');
+    }
+  };
+  
+  window.deleteAddress = async (id) => {
+    if (!confirm('Delete this address?')) return;
+    try {
+      await APIs.user.deleteAddress(id);
+      showToast('Address deleted!', 'success');
+      loadAddresses();
+    } catch (err) {
+      showToast('Failed to delete address: ' + err.message, 'error');
+    }
+  };
+  
+  window.editAddress = (id) => {
+    showToast('Edit address feature coming soon', 'info');
+  };
+  
+  // Save preferences
+  document.getElementById('savePrefBtn').onclick = async () => {
+    try {
+      await APIs.user.updatePreferences({
+        wishlistNotifications: document.getElementById('wishlistNotif').checked,
+        emailNotifications: document.getElementById('emailNotif').checked,
+        orderUpdates: document.getElementById('orderUpdates').checked,
+        promotionalEmails: document.getElementById('promotionalEmails').checked
+      });
+      showToast('Preferences saved!', 'success');
+    } catch (err) {
+      showToast('Failed to save preferences: ' + err.message, 'error');
+    }
+  };
+  
+  // Change password
+  document.getElementById('changePwdBtn').onclick = async () => {
+    const curr = document.getElementById('currentPwd').value;
+    const newPwd = document.getElementById('newPwd').value;
+    const confirm = document.getElementById('confirmPwd').value;
+    
+    if (!curr || !newPwd || !confirm) {
+      showToast('Please fill all password fields', 'error');
+      return;
+    }
+    
+    if (newPwd !== confirm) {
+      showToast('New passwords do not match', 'error');
+      return;
+    }
+    
+    if (newPwd.length < 8) {
+      showToast('Password must be at least 8 characters', 'error');
+      return;
+    }
+    
+    try {
+      showToast('Password update feature coming soon', 'info');
+    } catch (err) {
+      showToast('Failed to change password: ' + err.message, 'error');
+    }
+  };
+  
+  // Logout
+  document.getElementById('logoutBtn').onclick = (e) => {
+    e.preventDefault();
+    localStorage.removeItem('ss_token');
+    localStorage.removeItem('ss_user');
+    showToast('Logged out!', 'success');
+    setTimeout(() => window.location.href = 'index.html', 500);
+  };
+  
+  // Init
+  loadProfile();
+</script>
+</body>
+</html>

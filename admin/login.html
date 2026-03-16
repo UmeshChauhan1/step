@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Admin Login — StepStyle</title>
+  <link rel="stylesheet" href="../css/admin.css"/>
+</head>
+<body>
+<div class="login-page">
+  <div class="login-bg"></div>
+  <div class="login-card">
+    <div class="login-logo">STEP<span>STYLE</span></div>
+    <p class="login-subtitle">Admin Panel</p>
+    <h2>Sign In</h2>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="admin" autocomplete="username"/>
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <p class="login-error" id="loginError"></p>
+    <button class="btn-login" onclick="doLogin()">Sign In →</button>
+    <p class="login-hint">Demo: username <strong>admin</strong> / password <strong>admin123</strong></p>
+  </div>
+</div>
+
+<script src="../js/core.js"></script>
+<script>
+  // If already logged in, redirect
+  if (localStorage.getItem('ss_adminAuth') === 'true') location.href = 'dashboard.html';
+
+  function doLogin() {
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value;
+    const err = document.getElementById('loginError');
+    if (u === 'admin' && p === 'admin123') {
+      localStorage.setItem('ss_adminAuth', 'true');
+      location.href = 'dashboard.html';
+    } else {
+      err.textContent = 'Invalid credentials. Try admin / admin123';
+      document.getElementById('password').value = '';
+    }
+  }
+</script>
+</body>
+</html>

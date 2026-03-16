@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L1QE9XKPJW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-L1QE9XKPJW');
+</script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Analytics — StepStyle Admin</title>
+  
+  <link rel="stylesheet" href="../css/admin.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<div id="sidebarMount"></div>
+<div class="admin-layout">
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <span class="topbar-title">Analytics</span>
+      </div>
+      <div class="topbar-right"><span class="topbar-time" id="topbarTime"></span></div>
+    </div>
+    <div class="admin-content">
+      <!-- KPI Stats -->
+      <div class="stats-grid" id="kpiGrid" style="margin-bottom:1.5rem"></div>
+
+      <!-- Charts row 1 -->
+      <div class="analytics-grid" style="margin-bottom:1.5rem">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Monthly Revenue</span></div>
+          <div class="chart-wrap" style="height:240px"><canvas id="monthlyChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Sales by Category</span></div>
+          <div class="chart-wrap" style="height:240px"><canvas id="categoryChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Charts row 2 -->
+      <div class="analytics-grid" style="margin-bottom:1.5rem">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Top Selling Products</span></div>
+          <div class="top-products" id="topProducts"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Conversion & Traffic</span></div>
+          <div style="padding:1.2rem 1.4rem">
+            <div id="conversionStats"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orders trend -->
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Orders Trend (30 Days)</span></div>
+        <div class="chart-wrap" style="height:200px"><canvas id="ordersChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/core.js"></script>
+<script src="sidebar.js"></script>
+<script src="admin.js"></script>
+<script>
+  requireAuth();
+  document.getElementById('sidebarMount').innerHTML = buildSidebar('analytics');
+
+  const orders = Orders.all();
+  const products = Products.all();
+  const revenue = Orders.totalRevenue();
+  const delivered = orders.filter(o=>o.status==='Delivered').length;
+  const conversion = orders.length ? ((delivered/orders.length)*100).toFixed(1) : 0;
+  const avgOrder = orders.length ? revenue / orders.length : 0;
+
+  // KPIs
+  document.getElementById('kpiGrid').innerHTML = [
+    { label:'Total Revenue', value: fmt(revenue), icon:'💰' },
+    { label:'Avg Order Value', value: fmt(avgOrder), icon:'📊' },
+    { label:'Conversion Rate', value: conversion + '%', icon:'🎯' },
+    { label:'Fulfilled Orders', value: delivered, icon:'✅' },
+  ].map(s=>`<div class="stat-card"><div class="stat-label">${s.label}</div><div class="stat-value">${s.value}</div><div class="stat-icon">${s.icon}</div></div>`).join('');
+
+  const chartDefaults = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid:{color:'#1a1a1a'}, ticks:{color:'#555',font:{family:'DM Sans',size:10}} },
+      y: { grid:{color:'#1a1a1a'}, ticks:{color:'#555',font:{family:'DM Sans',size:10}} }
+    }
+  };
+
+  // Monthly revenue (last 6 months) - uses real orders + simulated fill
+  const months = [];
+  const monthRevenue = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(); d.setMonth(d.getMonth() - i);
+    months.push(d.toLocaleDateString('en-US',{month:'short'}));
+    const rev = orders.filter(o => {
+      const od = new Date(o.date);
+      return od.getMonth() === d.getMonth() && od.getFullYear() === d.getFullYear();
+    }).reduce((s,o)=>s+(o.total||0),0);
+    monthRevenue.push(rev || Math.floor(Math.random()*2000+800));
+  }
+  new Chart(document.getElementById('monthlyChart'), {
+    type:'bar',
+    data:{ labels:months, datasets:[{ data:monthRevenue, backgroundColor:'rgba(45,255,110,.7)', borderColor:'#2dff6e', borderWidth:1 }] },
+    options:{ ...chartDefaults, scales:{...chartDefaults.scales, y:{...chartDefaults.scales.y, ticks:{...chartDefaults.scales.y.ticks, callback:v=>'$'+v}}} }
+  });
+
+  // Category sales
+  const catMap = {};
+  orders.forEach(o => (o.items||[]).forEach(i => {
+    const p = Products.byId(i.id);
+    const cat = p?.category || 'Other';
+    catMap[cat] = (catMap[cat]||0) + (i.price * i.qty);
+  }));
+  // fallback demo data if no orders
+  if (!Object.keys(catMap).length) { ['Running','Casual','Sports'].forEach((c,i)=>catMap[c]=[1200,850,620][i]); }
+  new Chart(document.getElementById('categoryChart'), {
+    type:'pie',
+    data:{
+      labels: Object.keys(catMap),
+      datasets:[{ data:Object.values(catMap), backgroundColor:['#2dff6e','#3ca9ff','#ff9a3c','#ff4d4d'], borderWidth:0 }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{color:'#666',font:{family:'DM Sans',size:11},padding:14} } } }
+  });
+
+  // Top products
+  const productSales = {};
+  orders.forEach(o => (o.items||[]).forEach(i => {
+    productSales[i.id] = (productSales[i.id]||0) + i.qty;
+  }));
+  const sorted = products.map(p=>({...p, sold: productSales[p.id]||0})).sort((a,b)=>b.sold-a.sold).slice(0,5);
+  const maxSold = sorted[0]?.sold || 1;
+  document.getElementById('topProducts').innerHTML = sorted.length ?
+    sorted.map((p,i)=>`
+      <div class="top-product-item">
+        <span class="rank">${i+1}</span>
+        <div style="font-size:1.4rem">${p.emoji}</div>
+        <div class="tp-info">
+          <div class="tp-name">${p.name}</div>
+          <div class="tp-cat">${p.category}</div>
+          <div class="tp-bar-wrap" style="margin-top:.4rem"><div class="tp-bar" style="width:${(p.sold/maxSold)*100}%"></div></div>
+        </div>
+        <span class="tp-num">${p.sold}</span>
+      </div>`).join('') :
+    '<div class="empty-state">Place some orders to see top products</div>';
+
+  // Conversion stats
+  document.getElementById('conversionStats').innerHTML = [
+    { label:'Sessions (Simulated)', value: Math.floor(orders.length * 8.4 + 120), change:'+12%' },
+    { label:'Cart Adds', value: Math.floor(orders.length * 2.3 + 40), change:'+8%' },
+    { label:'Checkouts Started', value: Math.floor(orders.length * 1.4 + 20), change:'+5%' },
+    { label:'Orders Placed', value: orders.length, change:'+' + orders.length },
+    { label:'Conversion Rate', value: conversion + '%', change:'of sessions' },
+  ].map(s=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:.82rem;color:var(--muted)">${s.label}</span>
+      <div style="text-align:right">
+        <div style="font-family:'Bebas Neue';font-size:1.2rem">${s.value}</div>
+        <div style="font-size:.68rem;color:var(--green)">${s.change}</div>
+      </div>
+    </div>`).join('');
+
+  // Orders trend (last 30 days)
+  const trendDays = [];
+  const trendOrders = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    trendDays.push(i%5===0 ? d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '');
+    const cnt = orders.filter(o=>new Date(o.date).toDateString()===d.toDateString()).length;
+    trendOrders.push(cnt || (Math.random()<0.3 ? 1 : 0));
+  }
+  new Chart(document.getElementById('ordersChart'), {
+    type:'line',
+    data:{ labels:trendDays, datasets:[{data:trendOrders,borderColor:'#2dff6e',backgroundColor:'rgba(45,255,110,.05)',tension:.3,pointRadius:2,fill:true}] },
+    options:{ ...chartDefaults, plugins:{legend:{display:false}}, scales:{...chartDefaults.scales, y:{...chartDefaults.scales.y, ticks:{...chartDefaults.scales.y.ticks, stepSize:1}}} }
+  });
+</script>
+</body>
+</html>

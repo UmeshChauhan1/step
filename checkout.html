@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L1QE9XKPJW"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-L1QE9XKPJW');</script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Checkout — StepStyle</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="https://sdk.cashfree.com/js/ui/1.0.0/cashfree.sandbox.js"></script>
+  <style>
+    /* ── PROGRESS STEPPER ── */
+    .checkout-header{background:#0c0c0c;border-bottom:1px solid #1a1a1a;padding:1rem 5%}
+    .checkout-header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+    .header-logo{font-family:var(--font-d);font-size:1.7rem;letter-spacing:.05em;color:var(--white);text-decoration:none}
+    .header-logo span{color:var(--green)}
+    .stepper{display:flex;align-items:center;gap:0}
+    .step{display:flex;align-items:center;gap:.5rem;font-size:.8rem;font-weight:500;color:#444;letter-spacing:.05em;text-transform:uppercase}
+    .step.active{color:var(--white)}
+    .step.done{color:var(--green)}
+    .step-num{width:24px;height:24px;border-radius:50%;border:1.5px solid #333;display:flex;align-items:center;justify-content:center;font-size:.75rem;background:#111;flex-shrink:0}
+    .step.active .step-num{border-color:var(--green);background:var(--green);color:#000;font-weight:700}
+    .step.done .step-num{border-color:var(--green);background:var(--green);color:#000}
+    .step-sep{width:40px;height:1px;background:#222;margin:0 .5rem}
+
+    /* ── LAYOUT ── */
+    .co-page{max-width:1100px;margin:0 auto;padding:2rem 1.25rem 4rem;display:grid;grid-template-columns:1fr 380px;gap:2rem;align-items:start}
+
+    /* ── SECTIONS ── */
+    .co-section{background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:1.5rem;margin-bottom:1.25rem}
+    .co-section:last-child{margin-bottom:0}
+    .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.3rem}
+    .section-head h2{font-size:1rem;font-weight:600;color:var(--white);display:flex;align-items:center;gap:.6rem}
+    .section-badge{background:var(--green);color:#000;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0}
+    .section-edit{font-size:.8rem;color:var(--green);cursor:pointer;background:none;border:none;font-family:var(--font-b);padding:0}
+    .section-edit:hover{text-decoration:underline}
+
+    /* ── FORM FIELDS ── */
+    .f-group{margin-bottom:1rem}
+    .f-group label{display:block;font-size:.82rem;font-weight:500;color:#aaa;margin-bottom:.35rem}
+    .f-group input,.f-group select{width:100%;padding:.7rem .9rem;background:#0d0d0d;border:1.5px solid #222;border-radius:8px;color:var(--white);font-size:.88rem;font-family:var(--font-b);outline:none;transition:border-color .2s}
+    .f-group input::placeholder{color:#333}
+    .f-group input:focus,.f-group select:focus{border-color:var(--green);background:#0f0f0f}
+    .f-group select option{background:#111}
+    .f-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .f-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem}
+    .f-err{font-size:.78rem;color:#ff5555;margin-top:.3rem}
+
+    /* ── ADDRESS CARDS ── */
+    .addr-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+    .addr-card{padding:1rem;border:1.5px solid #222;border-radius:10px;cursor:pointer;transition:border-color .2s,background .2s;position:relative}
+    .addr-card:hover{border-color:#444}
+    .addr-card.selected{border-color:var(--green);background:rgba(45,255,110,.04)}
+    .addr-card-check{position:absolute;top:.75rem;right:.75rem;width:18px;height:18px;border-radius:50%;border:1.5px solid #333;background:#0a0a0a;display:flex;align-items:center;justify-content:center;transition:all .2s}
+    .addr-card.selected .addr-card-check{background:var(--green);border-color:var(--green)}
+    .addr-card.selected .addr-card-check::after{content:'✓';font-size:.6rem;color:#000;font-weight:700}
+    .addr-card-tag{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:.4rem}
+    .addr-card p{font-size:.83rem;color:#aaa;line-height:1.5}
+    .addr-card strong{color:var(--white)}
+    .add-addr-btn{width:100%;padding:.75rem;background:transparent;border:1.5px dashed #2a2a2a;border-radius:8px;color:#666;font-size:.85rem;cursor:pointer;transition:border-color .2s,color .2s;font-family:var(--font-b);display:flex;align-items:center;justify-content:center;gap:.5rem}
+    .add-addr-btn:hover{border-color:var(--green);color:var(--green)}
+    .addr-form-box{background:#0d0d0d;border:1px solid #1e1e1e;border-radius:10px;padding:1.2rem;margin-top:1rem;display:none}
+    .addr-form-box.open{display:block}
+
+    /* ── SHIPPING OPTIONS ── */
+    .ship-options{display:flex;flex-direction:column;gap:.6rem}
+    .ship-opt{display:flex;align-items:center;gap:1rem;padding:.9rem 1rem;border:1.5px solid #1e1e1e;border-radius:9px;cursor:pointer;transition:border-color .2s,background .2s}
+    .ship-opt:hover{border-color:#333}
+    .ship-opt.selected{border-color:var(--green);background:rgba(45,255,110,.04)}
+    .ship-radio{width:18px;height:18px;border-radius:50%;border:1.5px solid #333;background:#0a0a0a;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+    .ship-opt.selected .ship-radio{border-color:var(--green)}
+    .ship-opt.selected .ship-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--green)}
+    .ship-info{flex:1}
+    .ship-info strong{font-size:.9rem;color:var(--white)}
+    .ship-info span{font-size:.8rem;color:#666;display:block;margin-top:.1rem}
+    .ship-price{font-size:.9rem;font-weight:600;color:var(--white)}
+    .ship-badge{font-size:.7rem;background:rgba(45,255,110,.15);color:var(--green);padding:.15rem .5rem;border-radius:20px;margin-left:.5rem;font-weight:600}
+
+    /* ── PAYMENT OPTIONS ── */
+    .pay-tabs{display:flex;gap:.5rem;margin-bottom:1.2rem;flex-wrap:wrap}
+    .pay-tab{padding:.55rem 1rem;border:1.5px solid #222;border-radius:7px;font-size:.82rem;font-weight:500;cursor:pointer;transition:all .2s;background:#0d0d0d;color:#888;font-family:var(--font-b)}
+    .pay-tab:hover{border-color:#444;color:#ccc}
+    .pay-tab.active{border-color:var(--green);background:rgba(45,255,110,.07);color:var(--green)}
+    .pay-content{display:none}
+    .pay-content.show{display:block}
+    .upi-input-group{display:flex;gap:.6rem}
+    .upi-input-group input{flex:1}
+    .upi-verify-btn{padding:.7rem 1.2rem;background:var(--green);color:#000;border:none;border-radius:8px;font-weight:600;font-size:.85rem;cursor:pointer;font-family:var(--font-b);white-space:nowrap}
+    .card-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem}
+    .wallet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+    .wallet-opt{padding:.7rem;border:1.5px solid #1e1e1e;border-radius:8px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;font-size:.8rem;color:#888}
+    .wallet-opt:hover{border-color:#444;color:#ccc}
+    .wallet-opt.selected{border-color:var(--green);background:rgba(45,255,110,.05);color:var(--green)}
+    .wallet-icon{font-size:1.3rem;margin-bottom:.3rem}
+    .netbank-select select{width:100%;padding:.7rem .9rem;background:#0d0d0d;border:1.5px solid #222;border-radius:8px;color:var(--white);font-size:.88rem;font-family:var(--font-b);outline:none}
+    .netbank-select select:focus{border-color:var(--green)}
+    .cod-info{display:flex;align-items:flex-start;gap:.8rem;padding:1rem;background:rgba(255,196,0,.05);border:1px solid rgba(255,196,0,.15);border-radius:9px}
+    .cod-info-text strong{display:block;font-size:.88rem;color:#ffc400;margin-bottom:.25rem}
+    .cod-info-text p{font-size:.8rem;color:#888;line-height:1.5}
+
+    /* ── SECURITY BADGES ── */
+    .pay-trust{display:flex;align-items:center;gap:1.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid #161616;flex-wrap:wrap}
+    .pay-trust-item{display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:#444}
+
+    /* ── ORDER SUMMARY (right) ── */
+    .order-summary{background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:1.5rem;position:sticky;top:calc(var(--nav-h) + 1rem)}
+    .os-header{font-size:1rem;font-weight:600;color:var(--white);margin-bottom:1.2rem;display:flex;align-items:center;justify-content:space-between}
+    .os-toggle{font-size:.8rem;color:var(--green);cursor:pointer;background:none;border:none;font-family:var(--font-b)}
+    .order-items{margin-bottom:1.2rem}
+    .oi{display:flex;gap:.85rem;align-items:flex-start;padding:.85rem 0;border-bottom:1px solid #171717}
+    .oi:last-child{border-bottom:none}
+    .oi-img{width:54px;height:54px;border-radius:8px;background:#1a1a1a;overflow:hidden;flex-shrink:0;border:1px solid #222}
+    .oi-img img{width:100%;height:100%;object-fit:cover}
+    .oi-img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+    .oi-info{flex:1;min-width:0}
+    .oi-info strong{display:block;font-size:.85rem;color:var(--white);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .oi-info small{font-size:.77rem;color:#555;line-height:1.5}
+    .oi-price{font-size:.88rem;font-weight:600;color:var(--white);white-space:nowrap}
+    .oi-qty-badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:#2a2a2a;border-radius:50%;font-size:.7rem;color:#999;margin-left:.3rem;vertical-align:middle}
+
+    /* ── COUPON ── */
+    .coupon-section{margin-bottom:1.2rem}
+    .coupon-box{display:flex;gap:.5rem}
+    .coupon-box input{flex:1;padding:.65rem .85rem;background:#0d0d0d;border:1.5px solid #1e1e1e;border-radius:8px;color:var(--white);font-size:.85rem;font-family:var(--font-b);outline:none;transition:border-color .2s}
+    .coupon-box input:focus{border-color:var(--green)}
+    .coupon-box input::placeholder{color:#333}
+    .coupon-apply-btn{padding:.65rem 1.1rem;background:transparent;border:1.5px solid var(--green);border-radius:8px;color:var(--green);font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font-b);white-space:nowrap;transition:background .2s,color .2s}
+    .coupon-apply-btn:hover{background:var(--green);color:#000}
+    .coupon-status{font-size:.8rem;margin-top:.4rem}
+    .coupon-status.ok{color:var(--green)}
+    .coupon-status.fail{color:#ff5555}
+
+    /* ── PRICE ROWS ── */
+    .price-rows{border-top:1px solid #1a1a1a;padding-top:1rem;margin-bottom:1.2rem}
+    .pr{display:flex;justify-content:space-between;align-items:center;font-size:.875rem;padding:.3rem 0;color:#888}
+    .pr.save{color:var(--green)}
+    .pr.total{font-size:1.05rem;font-weight:700;color:var(--white);border-top:1px solid #1e1e1e;padding-top:.9rem;margin-top:.4rem}
+    .pr-label{display:flex;align-items:center;gap:.4rem}
+    .pr-tag{font-size:.7rem;background:rgba(45,255,110,.12);color:var(--green);padding:.1rem .4rem;border-radius:4px}
+
+    /* ── PAY BUTTON ── */
+    .pay-btn{width:100%;padding:1rem;background:var(--green);color:#000;border:none;border-radius:10px;font-weight:700;font-size:1rem;font-family:var(--font-b);letter-spacing:.04em;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;display:flex;align-items:center;justify-content:center;gap:.6rem}
+    .pay-btn:hover:not(:disabled){background:#38ff7a;transform:translateY(-1px);box-shadow:0 8px 28px rgba(45,255,110,.25)}
+    .pay-btn:disabled{opacity:.55;cursor:not-allowed}
+    .pay-btn .p-spin{width:16px;height:16px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .6s linear infinite;display:none}
+    .pay-btn.loading .p-spin{display:block}
+    .pay-btn.loading .p-txt{display:none}
+    .pay-err{color:#ff5555;font-size:.82rem;margin-top:.6rem;text-align:center}
+
+    /* ── DELIVERY ESTIMATE ── */
+    .delivery-est{display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:#666;margin-top:.75rem;justify-content:center}
+    .delivery-est strong{color:#999}
+
+    /* ── EMI BANNER ── */
+    .emi-banner{display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:#888;padding:.6rem .8rem;background:#0d0d0d;border:1px solid #1a1a1a;border-radius:7px;margin-top:.8rem}
+    .emi-banner strong{color:var(--green)}
+
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:900px){.co-page{grid-template-columns:1fr}.order-summary{position:relative;top:0}.addr-grid{grid-template-columns:1fr}}
+    @media(max-width:480px){.stepper{display:none}.card-row{grid-template-columns:1fr 1fr}.wallet-grid{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+
+<!-- Checkout Header with Stepper -->
+<nav class="navbar" style="display:none"></nav>
+<div class="checkout-header" style="margin-top:0;position:fixed;top:0;left:0;right:0;z-index:200">
+  <div class="checkout-header-inner">
+    <a class="header-logo" href="index.html">STEP<span>STYLE</span></a>
+    <div class="stepper">
+      <div class="step done" id="s1"><div class="step-num">✓</div><span>Cart</span></div>
+      <div class="step-sep"></div>
+      <div class="step active" id="s2"><div class="step-num">2</div><span>Checkout</span></div>
+      <div class="step-sep"></div>
+      <div class="step" id="s3"><div class="step-num">3</div><span>Payment</span></div>
+      <div class="step-sep"></div>
+      <div class="step" id="s4"><div class="step-num">4</div><span>Confirmation</span></div>
+    </div>
+    <a href="cart.html" style="font-size:.82rem;color:#555;text-decoration:none;display:flex;align-items:center;gap:.3rem">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to cart
+    </a>
+  </div>
+</div>
+
+<div style="height:60px"></div>
+
+<div class="co-page">
+  <!-- LEFT COLUMN -->
+  <div>
+
+    <!-- 1. DELIVERY ADDRESS -->
+    <div class="co-section">
+      <div class="section-head">
+        <h2><span class="section-badge">1</span> Delivery Address</h2>
+      </div>
+
+      <div class="addr-grid" id="addrGrid"></div>
+
+      <button class="add-addr-btn" id="addAddrBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add New Address
+      </button>
+
+      <div class="addr-form-box" id="addrFormBox">
+        <div style="font-size:.88rem;font-weight:600;color:var(--white);margin-bottom:1rem">New Delivery Address</div>
+        <div class="f-row">
+          <div class="f-group"><label>Full Name *</label><input type="text" id="aName" placeholder="John Doe"/></div>
+          <div class="f-group"><label>Phone *</label><input type="tel" id="aPhone" placeholder="9876543210"/></div>
+        </div>
+        <div class="f-group"><label>Address Line 1 *</label><input type="text" id="aLine1" placeholder="House/Flat no., Street name"/></div>
+        <div class="f-group"><label>Address Line 2 <span style="color:#444">(Optional)</span></label><input type="text" id="aLine2" placeholder="Landmark, Area"/></div>
+        <div class="f-row-3">
+          <div class="f-group"><label>City *</label><input type="text" id="aCity" placeholder="City"/></div>
+          <div class="f-group"><label>State *</label>
+            <select id="aState">
+              <option value="">Select</option>
+              <option>Andhra Pradesh</option><option>Assam</option><option>Bihar</option>
+              <option>Chandigarh</option><option>Delhi</option><option>Goa</option>
+              <option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option>
+              <option>Jharkhand</option><option>Karnataka</option><option>Kerala</option>
+              <option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option>
+              <option>Meghalaya</option><option>Odisha</option><option>Punjab</option>
+              <option>Rajasthan</option><option>Tamil Nadu</option><option>Telangana</option>
+              <option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option>
+            </select>
+          </div>
+          <div class="f-group"><label>Pincode *</label><input type="text" id="aZip" placeholder="110001" maxlength="6"/></div>
+        </div>
+        <div class="f-group"><label>Country</label><input type="text" id="aCountry" value="India" readonly/></div>
+        <div style="display:flex;gap:.75rem;margin-top:.5rem">
+          <button id="saveAddrBtn" style="flex:1;padding:.75rem;background:var(--green);color:#000;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-family:var(--font-b)">Save Address</button>
+          <button id="cancelAddrBtn" style="padding:.75rem 1.2rem;background:#1a1a1a;color:#888;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b)">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. SHIPPING METHOD -->
+    <div class="co-section">
+      <div class="section-head"><h2><span class="section-badge">2</span> Shipping Method</h2></div>
+      <div class="ship-options">
+        <div class="ship-opt selected" data-val="standard" data-cost="50" onclick="selectShipping(this)">
+          <div class="ship-radio"></div>
+          <div class="ship-info">
+            <strong>Standard Delivery<span class="ship-badge">Most Popular</span></strong>
+            <span>Delivered in 5–7 business days</span>
+          </div>
+          <div class="ship-price">₹50</div>
+        </div>
+        <div class="ship-opt" data-val="express" data-cost="150" onclick="selectShipping(this)">
+          <div class="ship-radio"></div>
+          <div class="ship-info">
+            <strong>Express Delivery</strong>
+            <span>Delivered in 2–3 business days</span>
+          </div>
+          <div class="ship-price">₹150</div>
+        </div>
+        <div class="ship-opt" data-val="overnight" data-cost="300" onclick="selectShipping(this)">
+          <div class="ship-radio"></div>
+          <div class="ship-info">
+            <strong>Overnight Delivery<span class="ship-badge" style="background:rgba(255,196,0,.12);color:#ffc400">Premium</span></strong>
+            <span>Order by 6 PM — delivered tomorrow</span>
+          </div>
+          <div class="ship-price">₹300</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. PAYMENT METHOD -->
+    <div class="co-section">
+      <div class="section-head"><h2><span class="section-badge">3</span> Payment Method</h2></div>
+
+      <div class="pay-tabs">
+        <button class="pay-tab active" onclick="switchPay('upi',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:.3rem"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          UPI
+        </button>
+        <button class="pay-tab" onclick="switchPay('card',this)">💳 Credit/Debit Card</button>
+        <button class="pay-tab" onclick="switchPay('wallet',this)">👛 Wallets</button>
+        <button class="pay-tab" onclick="switchPay('netbank',this)">🏦 Net Banking</button>
+        <button class="pay-tab" onclick="switchPay('cod',this)">📦 Cash on Delivery</button>
+      </div>
+
+      <!-- UPI -->
+      <div class="pay-content show" id="pay-upi">
+        <div class="f-group">
+          <label>Enter UPI ID</label>
+          <div class="upi-input-group">
+            <input type="text" id="upiId" placeholder="yourname@upi"/>
+            <button class="upi-verify-btn" onclick="verifyUPI()">Verify</button>
+          </div>
+          <div class="f-err" id="upiErr"></div>
+        </div>
+        <div style="font-size:.8rem;color:#444;margin-top:.5rem">Or pay with QR code via GPay, PhonePe, Paytm</div>
+      </div>
+
+      <!-- Card -->
+      <div class="pay-content" id="pay-card">
+        <div class="f-group"><label>Card Number</label><input type="text" placeholder="1234 5678 9012 3456" maxlength="19" id="cardNum" oninput="formatCard(this)"/></div>
+        <div class="f-group"><label>Name on Card</label><input type="text" placeholder="John Doe"/></div>
+        <div class="card-row">
+          <div class="f-group"><label>Expiry (MM/YY)</label><input type="text" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)"/></div>
+          <div class="f-group"><label>CVV</label><input type="password" placeholder="•••" maxlength="3"/></div>
+          <div class="f-group"><label>Network</label>
+            <select><option>Auto Detect</option><option>Visa</option><option>Mastercard</option><option>RuPay</option><option>Amex</option></select>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.5rem;margin-top:.3rem;font-size:.78rem;color:#444">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Your card details are encrypted and secure. We do not store card info.
+        </div>
+      </div>
+
+      <!-- Wallets -->
+      <div class="pay-content" id="pay-wallet">
+        <div class="wallet-grid">
+          <div class="wallet-opt" onclick="selectWallet(this)"><div class="wallet-icon">📱</div>Paytm</div>
+          <div class="wallet-opt" onclick="selectWallet(this)"><div class="wallet-icon">🟢</div>PhonePe</div>
+          <div class="wallet-opt" onclick="selectWallet(this)"><div class="wallet-icon">🔵</div>Amazon Pay</div>
+          <div class="wallet-opt" onclick="selectWallet(this)"><div class="wallet-icon">🟡</div>MobiKwik</div>
+          <div class="wallet-opt" onclick="selectWallet(this)"><div class="wallet-icon">🟠</div>Freecharge</div>
+          <div class="wallet-opt" onclick="selectWallet(this)"><div class="wallet-icon">⚪</div>Airtel Money</div>
+        </div>
+      </div>
+
+      <!-- Net Banking -->
+      <div class="pay-content" id="pay-netbank">
+        <div class="netbank-select">
+          <div class="f-group"><label>Select Your Bank</label>
+            <select>
+              <option value="">Choose a bank</option>
+              <option>State Bank of India (SBI)</option>
+              <option>HDFC Bank</option><option>ICICI Bank</option>
+              <option>Axis Bank</option><option>Kotak Mahindra</option>
+              <option>Punjab National Bank</option><option>Bank of Baroda</option>
+              <option>Yes Bank</option><option>IndusInd Bank</option>
+              <option>Other Bank</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- COD -->
+      <div class="pay-content" id="pay-cod">
+        <div class="cod-info">
+          <div style="font-size:1.5rem">📦</div>
+          <div class="cod-info-text">
+            <strong>Cash on Delivery Available</strong>
+            <p>Pay ₹50 extra as COD handling fee. Pay in cash or UPI when your order arrives at your door.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Badges -->
+      <div class="pay-trust">
+        <div class="pay-trust-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> 256-bit SSL</div>
+        <div class="pay-trust-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> PCI-DSS Compliant</div>
+        <div class="pay-trust-item">🔒 Cashfree Secured</div>
+        <div class="pay-trust-item">✓ RBI Approved</div>
+      </div>
+    </div>
+
+  </div><!-- /left column -->
+
+  <!-- RIGHT: ORDER SUMMARY -->
+  <div>
+    <div class="order-summary">
+      <div class="os-header">
+        Order Summary
+        <button class="os-toggle" id="osToggle" onclick="toggleItems()">Hide items</button>
+      </div>
+
+      <div id="osItems" class="order-items"></div>
+
+      <!-- Coupon -->
+      <div class="coupon-section">
+        <div class="coupon-box">
+          <input type="text" id="couponInput" placeholder="Enter coupon code"/>
+          <button class="coupon-apply-btn" onclick="applyCoupon()">Apply</button>
+        </div>
+        <div class="coupon-status" id="couponStatus"></div>
+      </div>
+
+      <!-- Price Rows -->
+      <div class="price-rows">
+        <div class="pr"><span>MRP Total</span><span id="prMrp">₹0</span></div>
+        <div class="pr save" id="prDiscRow" style="display:none"><span class="pr-label">Coupon Discount <span class="pr-tag" id="couponTag"></span></span><span id="prDisc">-₹0</span></div>
+        <div class="pr"><span>Shipping</span><span id="prShip">₹50</span></div>
+        <div class="pr"><span>Tax (8% GST)</span><span id="prTax">₹0</span></div>
+        <div class="pr total"><span>Total Payable</span><span id="prTotal">₹0</span></div>
+      </div>
+
+      <!-- Pay Button -->
+      <div id="payErr" class="pay-err"></div>
+      <button class="pay-btn" id="payBtn">
+        <span class="p-txt">Proceed to Pay</span>
+        <div class="p-spin"></div>
+      </button>
+
+      <div class="delivery-est" id="deliveryEst">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Estimated delivery: <strong id="estDate">in 5–7 days</strong>
+      </div>
+
+      <div class="emi-banner">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        EMI available from <strong>₹0 interest</strong> on selected cards
+      </div>
+    </div>
+  </div>
+</div><!-- /co-page -->
+
+<script src="js/api.js"></script>
+<script src="js/core.js"></script>
+<script>
+  if (!window.checkAuth || !window.checkAuth()) {
+    localStorage.setItem('ss_redirect', 'checkout.html');
+    window.location.href = 'login.html';
+  }
+
+  const user = window.getUser ? window.getUser() : null;
+  const cart = window.getCart ? window.getCart() : [];
+  if (!cart || cart.length === 0) { window.location.href = 'shop.html'; }
+
+  let selAddr = null, appliedCoupon = null, itemsVisible = true;
+
+  // ── RENDER ITEMS ──
+  function renderItems() {
+    const c = document.getElementById('osItems');
+    c.innerHTML = cart.map(item => `
+      <div class="oi">
+        <div class="oi-img"><div class="oi-img-placeholder">👟</div></div>
+        <div class="oi-info">
+          <strong>${item.name}</strong>
+          <small>Size: ${item.size||'N/A'} | Color: ${item.color||'N/A'}</small><br>
+          <small style="color:#555">Qty: ${item.qty}</small>
+        </div>
+        <div class="oi-price">₹${(item.price*item.qty).toLocaleString('en-IN')}</div>
+      </div>
+    `).join('');
+  }
+
+  function toggleItems() {
+    itemsVisible = !itemsVisible;
+    document.getElementById('osItems').style.display = itemsVisible ? '' : 'none';
+    document.getElementById('osToggle').textContent = itemsVisible ? 'Hide items' : 'Show items';
+  }
+
+  // ── TOTAL ──
+  function updateTotal() {
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const shipOpt = document.querySelector('.ship-opt.selected');
+    const ship = shipOpt ? parseInt(shipOpt.dataset.cost) : 50;
+    const payMethod = document.querySelector('.pay-tab.active')?.textContent?.trim() || '';
+    const codFee = payMethod.includes('Cash') ? 50 : 0;
+    const disc = appliedCoupon ? appliedCoupon.discount : 0;
+    const base = subtotal - disc;
+    const tax = Math.round(base * 0.08);
+    const total = base + ship + tax + codFee;
+
+    document.getElementById('prMrp').textContent = '₹' + subtotal.toLocaleString('en-IN');
+    document.getElementById('prShip').textContent = ship === 0 ? 'FREE' : '₹' + (ship + codFee);
+    document.getElementById('prTax').textContent = '₹' + tax.toLocaleString('en-IN');
+    document.getElementById('prTotal').textContent = '₹' + total.toLocaleString('en-IN');
+
+    if (appliedCoupon) {
+      document.getElementById('prDiscRow').style.display = 'flex';
+      document.getElementById('prDisc').textContent = '-₹' + disc.toLocaleString('en-IN');
+      document.getElementById('couponTag').textContent = appliedCoupon.code;
+    } else {
+      document.getElementById('prDiscRow').style.display = 'none';
+    }
+    return { subtotal, ship, disc, tax, total };
+  }
+
+  // ── SHIPPING ──
+  function selectShipping(el) {
+    document.querySelectorAll('.ship-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    const val = el.dataset.val;
+    const days = { standard: '5–7 days', express: '2–3 days', overnight: 'tomorrow' };
+    document.getElementById('estDate').textContent = 'in ' + (days[val]||'5–7 days');
+    updateTotal();
+  }
+
+  // ── PAYMENT TABS ──
+  function switchPay(id, btn) {
+    document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.pay-content').forEach(c => c.classList.remove('show'));
+    btn.classList.add('active');
+    document.getElementById('pay-' + id).classList.add('show');
+    updateTotal();
+  }
+
+  function selectWallet(el) {
+    document.querySelectorAll('.wallet-opt').forEach(w => w.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function verifyUPI() {
+    const v = document.getElementById('upiId').value.trim();
+    if (!v || !v.includes('@')) {
+      document.getElementById('upiErr').textContent = 'Please enter a valid UPI ID (e.g. name@upi)';
+    } else {
+      document.getElementById('upiErr').textContent = '';
+      if (typeof showToast === 'function') showToast('UPI ID verified ✓', 'success');
+    }
+  }
+
+  function formatCard(inp) {
+    let v = inp.value.replace(/\D/g,'').substring(0,16);
+    inp.value = v.replace(/(.{4})/g,'$1 ').trim();
+  }
+  function formatExpiry(inp) {
+    let v = inp.value.replace(/\D/g,'').substring(0,4);
+    if (v.length>=2) v = v.substring(0,2)+'/'+v.substring(2);
+    inp.value = v;
+  }
+
+  // ── ADDRESS ──
+  async function loadAddresses() {
+    const grid = document.getElementById('addrGrid');
+    try {
+      const u = await APIs.user.getProfile();
+      if (!u.addresses || u.addresses.length === 0) { grid.innerHTML = ''; return; }
+      grid.innerHTML = u.addresses.map((a, i) => `
+        <div class="addr-card ${i===0?'selected':''}" onclick="selectAddr(this,'${i}')" data-idx="${i}">
+          <div class="addr-card-check"></div>
+          <div class="addr-card-tag">${a.isDefault ? '⭐ Default' : 'Address ' + (i+1)}</div>
+          <p><strong>${a.name}</strong></p>
+          <p>${a.line1}${a.line2?', '+a.line2:''}</p>
+          <p>${a.city}, ${a.state} – ${a.zip}</p>
+          <p style="margin-top:.3rem;color:var(--green);font-size:.78rem">${a.phone}</p>
+        </div>
+      `).join('');
+      if (u.addresses.length > 0) selAddr = u.addresses[0];
+    } catch(e) {
+      grid.innerHTML = '<p style="font-size:.82rem;color:#555">Could not load saved addresses.</p>';
+    }
+  }
+
+  function selectAddr(el, idx) {
+    document.querySelectorAll('.addr-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  document.getElementById('addAddrBtn').onclick = () => {
+    document.getElementById('addrFormBox').classList.toggle('open');
+  };
+  document.getElementById('cancelAddrBtn').onclick = () => {
+    document.getElementById('addrFormBox').classList.remove('open');
+  };
+
+  document.getElementById('saveAddrBtn').onclick = async () => {
+    const a = {
+      name: document.getElementById('aName').value,
+      phone: document.getElementById('aPhone').value,
+      line1: document.getElementById('aLine1').value,
+      line2: document.getElementById('aLine2').value,
+      city: document.getElementById('aCity').value,
+      state: document.getElementById('aState').value,
+      zip: document.getElementById('aZip').value,
+      country: 'India', isDefault: false
+    };
+    if (!a.name||!a.phone||!a.line1||!a.city||!a.state||!a.zip) {
+      if (typeof showToast === 'function') showToast('Please fill all required fields','error');
+      return;
+    }
+    try {
+      await APIs.user.addAddress(a);
+      if (typeof showToast === 'function') showToast('Address saved!','success');
+      document.getElementById('addrFormBox').classList.remove('open');
+      loadAddresses();
+    } catch(e) {
+      if (typeof showToast === 'function') showToast(e.message||'Failed to save address','error');
+    }
+  };
+
+  // ── COUPON ──
+  async function applyCoupon() {
+    const code = document.getElementById('couponInput').value.trim().toUpperCase();
+    const st = document.getElementById('couponStatus');
+    if (!code) return;
+    try {
+      const sub = cart.reduce((s,i) => s+i.price*i.qty, 0);
+      const r = await APIs.coupons.validate(code, sub);
+      appliedCoupon = { code, discount: r.discountAmount };
+      st.className = 'coupon-status ok';
+      st.textContent = '✓ Coupon "' + code + '" applied — saving ₹' + r.discountAmount;
+      updateTotal();
+    } catch(e) {
+      st.className = 'coupon-status fail';
+      st.textContent = '✗ ' + (e.message || 'Invalid coupon code');
+      appliedCoupon = null;
+      updateTotal();
+    }
+  }
+
+  // ── PAY ──
+  document.getElementById('payBtn').onclick = async () => {
+    const cards = document.querySelectorAll('.addr-card');
+    const selCard = document.querySelector('.addr-card.selected');
+    if (!selCard && cards.length === 0) {
+      document.getElementById('payErr').textContent = '⚠ Please add a delivery address to continue.';
+      return;
+    }
+    document.getElementById('payErr').textContent = '';
+    const { total } = updateTotal();
+    const ship = document.querySelector('.ship-opt.selected')?.dataset?.val || 'standard';
+    const btn = document.getElementById('payBtn');
+    btn.classList.add('loading'); btn.disabled = true;
+
+    // Activate payment step
+    document.getElementById('s3').classList.add('active');
+
+    try {
+      const orderResult = await APIs.orders.create(
+        cart.map(i => ({ productId:i.id, name:i.name, price:i.price, quantity:i.qty, size:i.size, color:i.color })),
+        selAddr, ship, appliedCoupon?.code
+      );
+      const order = orderResult.order;
+      const orderId = order.id || order.orderId || 'SS-' + Date.now();
+
+      const cashfreeOrder = await CashfreeAPI.createOrder({
+        orderId, orderAmount: total,
+        customerName: selAddr?.name || (user?.name||'Customer'),
+        customerPhone: selAddr?.phone || '',
+        customerEmail: user?.email || 'customer@example.com',
+        returnUrl: location.origin + '/confirmation.html?orderId=' + orderId
+      });
+      if (!cashfreeOrder.orderToken) throw new Error('Payment session could not be created.');
+
+      const cf = window.cashfree || window.Cashfree;
+      if (!cf?.pay) throw new Error('Payment SDK not loaded. Please reload.');
+      cf.pay({
+        orderId, orderAmount: String(total), orderCurrency:'INR',
+        orderNote:'StepStyle purchase',
+        customerName: selAddr?.name||'', customerPhone: selAddr?.phone||'',
+        customerEmail: user?.email||'customer@example.com',
+        tokenData: { token: cashfreeOrder.orderToken, tokenType:'ORDER_TOKEN' },
+        returnUrl: location.origin + '/confirmation.html?orderId=' + orderId
+      });
+    } catch(err) {
+      document.getElementById('payErr').textContent = '✗ ' + (err.message || 'Payment failed. Please try again.');
+      btn.classList.remove('loading'); btn.disabled = false;
+      document.getElementById('s3').classList.remove('active');
+    }
+  };
+
+  // ── INIT ──
+  renderItems();
+  updateTotal();
+  loadAddresses();
+</script>
+</body>
+</html>

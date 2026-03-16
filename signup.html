@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Sign Up — StepStyle</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .signup-container {
+      max-width: 450px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: var(--gray);
+      border-radius: 12px;
+      border: 1px solid var(--gray-mid);
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: .5rem;
+      font-weight: 500;
+    }
+    .form-group input {
+      width: 100%;
+      padding: .75rem 1rem;
+      border: 1px solid var(--gray-mid);
+      border-radius: 8px;
+      background: var(--gray-mid);
+      color: var(--white);
+      font-size: .9rem;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--green);
+    }
+    .signup-btn {
+      width: 100%;
+      padding: .85rem;
+      background: var(--green);
+      color: var(--black);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: .9rem;
+    }
+    .signup-btn:hover {
+      background: #2dd657;
+    }
+    .error { color: #ff4d4d; font-size: .85rem; margin-top: .25rem; }
+    .auth-link { text-align: center; margin-top: 1.5rem; }
+    .auth-link a { color: var(--green); text-decoration: none; }
+    .password-strength {
+      font-size: .75rem;
+      margin-top: .25rem;
+      padding: .5rem;
+      border-radius: 4px;
+      background: var(--gray-mid);
+    }
+    .strength-weak { color: #ff4d4d; }
+    .strength-medium { color: #ffaa00; }
+    .strength-strong { color: #4dff4d; }
+    .loading { opacity: 0.6; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <div class="signup-container">
+    <h1 style="text-align:center;margin-bottom:2rem">Create Account</h1>
+    
+    <form id="signupForm">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="name" required placeholder="John Doe"/>
+        <div class="error" id="nameError"></div>
+      </div>
+      
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" required placeholder="your@email.com"/>
+        <div class="error" id="emailError"></div>
+      </div>
+      
+      <div class="form-group">
+        <label>Phone (Optional)</label>
+        <input type="tel" id="phone" placeholder="+91 98765 43210"/>
+        <div class="error" id="phoneError"></div>
+      </div>
+      
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" required placeholder="••••••••"/>
+        <div id="strengthPW" class="password-strength"></div>
+        <div class="error" id="passwordError"></div>
+      </div>
+      
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="passwordConfirm" required placeholder="••••••••"/>
+        <div class="error" id="passwordConfirmError"></div>
+      </div>
+      
+      <div class="error" id="generalError" style="margin-bottom:1rem"></div>
+      
+      <button type="submit" class="signup-btn">Create Account</button>
+    </form>
+    
+    <div class="auth-link">
+      Already have an account? <a href="login.html">Sign In</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  // Check if already logged in
+  if (window.checkAuth()) {
+    window.location.href = 'index.html';
+  }
+  
+  // Password strength indicator
+  document.getElementById('password').addEventListener('input', (e) => {
+    const pwd = e.target.value;
+    const strength = document.getElementById('strengthPW');
+    
+    if (!pwd) {
+      strength.textContent = '';
+      return;
+    }
+    
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (pwd.length >= 12) score++;
+    if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+    
+    let level = '';
+    if (score <= 2) {
+      level = '<span class="strength-weak">⚠ Weak password</span>';
+    } else if (score <= 3) {
+      level = '<span class="strength-medium">≈ Medium strength</span>';
+    } else {
+      level = '<span class="strength-strong">✓ Strong password</span>';
+    }
+    
+    strength.innerHTML = level;
+  });
+  
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+    const password = document.getElementById('password').value;
+    const passwordConfirm = document.getElementById('passwordConfirm').value;
+    const btn = document.querySelector('.signup-btn');
+    
+    // Clear errors
+    document.querySelectorAll('.error').forEach(el => el.textContent = '');
+    
+    // Validate
+    if (password !== passwordConfirm) {
+      document.getElementById('passwordConfirmError').textContent = 'Passwords do not match';
+      return;
+    }
+    if (password.length < 8) {
+      document.getElementById('passwordError').textContent = 'Password must be at least 8 characters';
+      return;
+    }
+    
+    try {
+      btn.classList.add('loading');
+      btn.textContent = 'Creating account...';
+      
+      const data = await APIs.auth.signup(email, password, name, phone);
+      
+      showToast('Account created successfully!', 'success');
+      
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1000);
+      
+    } catch (err) {
+      const msg = err.message || 'Signup failed';
+      if (msg.includes('email')) {
+        document.getElementById('emailError').textContent = msg;
+      } else {
+        document.getElementById('generalError').textContent = msg;
+      }
+      btn.classList.remove('loading');
+      btn.textContent = 'Create Account';
+    }
+  });
+</script>
+</body>
+</html>

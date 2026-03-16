@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L1QE9XKPJW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-L1QE9XKPJW');
+</script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>StepStyle — Modern Footwear</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="navbar">
+  <a class="logo" href="index.html">STEP<span>STYLE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-icons">
+    <a href="shop.html" class="nav-icon-btn" title="Search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    </a>
+    <button class="nav-icon-btn" id="cartToggle" title="Cart">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span class="cart-badge">0</span>
+    </button>
+    <!-- Auth Buttons (Before Login) -->
+    <div id="authBeforeLogin" class="nav-auth-group">
+      <a href="login.html" class="nav-link-btn">Login</a>
+      <a href="signup.html" class="btn btn-green" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Sign Up</a>
+    </div>
+    <!-- After Login -->
+    <div id="authAfterLogin" class="nav-auth-group" style="display: none;">
+      <span id="userGreeting" style="color: var(--green); margin-right: 1rem; font-size: 0.9rem;"></span>
+      <button id="logoutBtn" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Logout</button>
+    </div>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<ul class="mobile-nav" id="mobileNav">
+  <li><a href="index.html">Home</a></li>
+  <li><a href="shop.html">Shop</a></li>
+  <li><a href="contact.html">Contact</a></li>
+  <!-- Mobile Auth Options -->
+  <li id="mobileAuthBeforeLogin" style="border-top: 1px solid var(--gray-mid); padding-top: 1rem; margin-top: 1rem;">
+    <a href="login.html" style="display: block; margin-bottom: 1rem;">Login</a>
+    <a href="signup.html" class="btn btn-green" style="display: block; text-align: center;">Sign Up</a>
+  </li>
+  <li id="mobileAuthAfterLogin" style="border-top: 1px solid var(--gray-mid); padding-top: 1rem; margin-top: 1rem; display: none;">
+    <span id="mobileUserGreeting" style="display: block; color: var(--green); margin-bottom: 1rem;"></span>
+    <button id="mobileLogoutBtn" class="btn btn-outline" style="width: 100%;">Logout</button>
+  </li>
+</ul>
+
+<!-- HERO -->
+<div class="page">
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-vline" style="left:20%"></div>
+    <div class="hero-vline" style="left:40%"></div>
+    <div class="hero-vline" style="left:60%"></div>
+    <div class="hero-vline" style="left:80%"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">New Collection 2025</p>
+      <h1 class="hero-title">Welcome to<br><span class="accent">StepStyle</span></h1>
+      <p class="hero-desc">Engineered for performance. Designed for culture. Each pair is crafted to move with you — whether you're on the track, the streets, or everything in between.</p>
+      <div class="hero-actions">
+        <a href="shop.html" class="btn btn-green">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Shop Now
+        </a>
+        <button class="btn btn-outline" onclick="downloadCatalog()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Catalog
+        </button>
+      </div>
+    </div>
+    <div class="hero-marquee" id="heroMarquee"></div>
+  </section>
+
+  <!-- FEATURED PRODUCTS -->
+  <section class="section" style="background:var(--gray)">
+    <div class="section-header reveal">
+      <div>
+        <p class="section-label">Featured</p>
+        <h2 class="section-title">Top Picks</h2>
+      </div>
+      <a href="shop.html" class="btn btn-outline">View All</a>
+    </div>
+    <div class="product-grid" id="featuredGrid"></div>
+  </section>
+
+  <!-- WHY STEPSTYLE -->
+  <section class="section reveal">
+    <div class="section-header">
+      <div>
+        <p class="section-label">Why Us</p>
+        <h2 class="section-title">Built Different</h2>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px">
+      <div class="reveal" style="background:var(--gray);padding:2rem;border:1px solid var(--gray-mid)">
+        <div style="font-size:2rem;margin-bottom:1rem">⚡</div>
+        <h3 style="font-family:var(--font-d);font-size:1.4rem;margin-bottom:.5rem">Performance First</h3>
+        <p style="font-size:.85rem;color:var(--gray-light)">Every sole, every stitch engineered for peak athletic performance and endurance.</p>
+      </div>
+      <div class="reveal" style="background:var(--gray);padding:2rem;border:1px solid var(--gray-mid)">
+        <div style="font-size:2rem;margin-bottom:1rem">♻️</div>
+        <h3 style="font-family:var(--font-d);font-size:1.4rem;margin-bottom:.5rem">Sustainable Materials</h3>
+        <p style="font-size:.85rem;color:var(--gray-light)">30% recycled content in every shoe. We're stepping lighter on the planet.</p>
+      </div>
+      <div class="reveal" style="background:var(--gray);padding:2rem;border:1px solid var(--gray-mid)">
+        <div style="font-size:2rem;margin-bottom:1rem">🛡️</div>
+        <h3 style="font-family:var(--font-d);font-size:1.4rem;margin-bottom:.5rem">2-Year Warranty</h3>
+        <p style="font-size:.85rem;color:var(--gray-light)">We stand behind our craft with an industry-leading guarantee on every pair.</p>
+      </div>
+      <div class="reveal" style="background:var(--gray);padding:2rem;border:1px solid var(--gray-mid)">
+        <div style="font-size:2rem;margin-bottom:1rem">🚚</div>
+        <h3 style="font-family:var(--font-d);font-size:1.4rem;margin-bottom:.5rem">Free Shipping</h3>
+        <p style="font-size:.85rem;color:var(--gray-light)">Fast, free delivery on all orders over $75. Returns are always free, always easy.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- CART SIDEBAR -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h2>Your Cart</h2>
+    <button class="close-btn" id="cartClose">&times;</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter"></div>
+</div>
+
+<footer>
+  <div class="footer-logo">STEP<span>STYLE</span></div>
+  <ul class="footer-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><a href="admin/login.html">Admin</a></li>
+  </ul>
+  <p class="footer-copy">&copy; 2025 StepStyle. All rights reserved.</p>
+</footer>
+
+<script src="js/core.js"></script>
+<script src="js/cart-ui.js"></script>
+<script src="js/api.js"></script>
+<script>
+  buildMarquee('#heroMarquee');
+
+  // Render featured products (first 3)
+  const grid = document.getElementById('featuredGrid');
+  const featured = Products.all().slice(0, 3);
+  featured.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'product-card reveal';
+    el.innerHTML = buildProductCard(p);
+    grid.appendChild(el);
+  });
+  initReveal();
+
+  function downloadCatalog() {
+    ga('pdf_download', { file_name: 'stepstyle_catalog_2025.pdf' });
+    showToast('Catalog download started!');
+  }
+
+  // ━━━ Authentication UI Management ━━━
+  function updateAuthUI() {
+    const token = localStorage.getItem('ss_token');
+    const user = JSON.parse(localStorage.getItem('ss_user') || 'null');
+    
+    // Desktop auth UI
+    const beforeLogin = document.getElementById('authBeforeLogin');
+    const afterLogin = document.getElementById('authAfterLogin');
+    
+    // Mobile auth UI
+    const mobileBeforeLogin = document.getElementById('mobileAuthBeforeLogin');
+    const mobileAfterLogin = document.getElementById('mobileAuthAfterLogin');
+    
+    if (token && user) {
+      // User is logged in - hide login prompts
+      beforeLogin.style.display = 'none';
+      afterLogin.style.display = 'flex';
+      mobileBeforeLogin.style.display = 'none';
+      mobileAfterLogin.style.display = 'block';
+      
+      // Show user name
+      document.getElementById('userGreeting').textContent = `Hi, ${user.name}!`;
+      document.getElementById('mobileUserGreeting').textContent = `Hi, ${user.name}!`;
+    } else {
+      // User is not logged in - show login prompts
+      beforeLogin.style.display = 'flex';
+      afterLogin.style.display = 'none';
+      mobileBeforeLogin.style.display = 'block';
+      mobileAfterLogin.style.display = 'none';
+    }
+  }
+
+  // Logout function
+  function performLogout() {
+    localStorage.removeItem('ss_token');
+    localStorage.removeItem('ss_user');
+    localStorage.removeItem('ss_cart');
+    showToast('Logged out successfully');
+    updateAuthUI();
+    
+    // Close mobile menu if open
+    const mobileNav = document.getElementById('mobileNav');
+    const hamburger = document.getElementById('hamburger');
+    if (mobileNav.classList.contains('open')) {
+      mobileNav.classList.remove('open');
+      hamburger.classList.remove('open');
+    }
+    
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 1000);
+  }
+
+  // Desktop logout
+  document.getElementById('logoutBtn')?.addEventListener('click', performLogout);
+  
+  // Mobile logout
+  document.getElementById('mobileLogoutBtn')?.addEventListener('click', performLogout);
+
+  // Check auth status on page load
+  updateAuthUI();
+
+</script>
+</body>
+</html>

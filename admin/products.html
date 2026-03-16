@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Products — StepStyle Admin</title>
+ <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L1QE9XKPJW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-L1QE9XKPJW');
+</script>
+  <link rel="stylesheet" href="../css/admin.css"/>
+</head>
+<body>
+<div id="sidebarMount"></div>
+<div class="admin-layout">
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <span class="topbar-title">Products</span>
+      </div>
+      <div class="topbar-right"><span class="topbar-time" id="topbarTime"></span></div>
+    </div>
+    <div class="admin-content">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">All Products</span>
+          <div class="panel-actions">
+            <input type="text" class="admin-search" id="searchInput" placeholder="Search products…" oninput="renderTable()"/>
+            <button class="btn-sm btn-primary" onclick="openModal()">+ Add Product</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="admin-table">
+            <thead><tr><th>Emoji</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Badge</th><th>Actions</th></tr></thead>
+            <tbody id="productTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Add Product</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId"/>
+      <div class="mf-row">
+        <div class="mf"><label>Product Name</label><input type="text" id="mName" placeholder="Sprint Pro Runner"/></div>
+        <div class="mf"><label>Category</label>
+          <select id="mCategory">
+            <option>Running</option><option>Casual</option><option>Sports</option><option>Lifestyle</option>
+          </select>
+        </div>
+      </div>
+      <div class="mf-row">
+        <div class="mf"><label>Price ($)</label><input type="number" id="mPrice" placeholder="129" min="0" step="0.01"/></div>
+        <div class="mf"><label>Stock</label><input type="number" id="mStock" placeholder="20" min="0"/></div>
+      </div>
+      <div class="mf-row">
+        <div class="mf"><label>Emoji Icon</label><input type="text" id="mEmoji" placeholder="👟" maxlength="4"/></div>
+        <div class="mf"><label>Badge (optional)</label><input type="text" id="mBadge" placeholder="New, Best Seller…"/></div>
+      </div>
+      <div class="mf"><label>Card Background Color</label><input type="color" id="mColor" value="#141414" style="height:40px;cursor:pointer"/></div>
+      <div class="mf"><label>Description</label><textarea id="mDesc" placeholder="Product description…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-sm btn-primary" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal" style="width:360px">
+    <div class="modal-header"><h3>Delete Product</h3><button class="modal-close" onclick="closeDelete()">&times;</button></div>
+    <div class="modal-body"><p style="color:var(--muted);font-size:.88rem">Are you sure you want to delete <strong id="deleteName"></strong>? This cannot be undone.</p></div>
+    <div class="modal-footer">
+      <button class="btn-sm btn-secondary" onclick="closeDelete()">Cancel</button>
+      <button class="btn-sm btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/core.js"></script>
+<script src="sidebar.js"></script>
+<script src="admin.js"></script>
+<script>
+  requireAuth();
+  document.getElementById('sidebarMount').innerHTML = buildSidebar('products');
+
+  let deleteId = null;
+
+  function renderTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const products = Products.all().filter(p =>
+      !q || p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)
+    );
+    const tbody = document.getElementById('productTable');
+    if (products.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No products found.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = products.map(p => `
+      <tr>
+        <td style="font-size:1.8rem">${p.emoji||'👟'}</td>
+        <td>
+          <strong style="font-size:.88rem">${p.name}</strong>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${(p.desc||'').substring(0,50)}${p.desc?.length>50?'…':''}</div>
+        </td>
+        <td><span class="badge badge-gray">${p.category}</span></td>
+        <td style="color:var(--green);font-family:'Bebas Neue';font-size:1.1rem">${fmt(p.price)}</td>
+        <td><span class="badge ${p.stock>5?'badge-green':p.stock>0?'badge-orange':'badge-red'}">${p.stock}</span></td>
+        <td>${p.badge ? `<span class="badge badge-blue">${p.badge}</span>` : '<span style="color:#333">—</span>'}</td>
+        <td>
+          <div style="display:flex;gap:.4rem">
+            <button class="btn-sm btn-secondary" onclick="editProduct('${p.id}')">Edit</button>
+            <button class="btn-sm btn-danger" onclick="promptDelete('${p.id}','${p.name.replace(/'/g,"\\'")}')">Delete</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  function openModal(p = null) {
+    document.getElementById('modalTitle').textContent = p ? 'Edit Product' : 'Add Product';
+    document.getElementById('editId').value = p?.id || '';
+    document.getElementById('mName').value = p?.name || '';
+    document.getElementById('mCategory').value = p?.category || 'Running';
+    document.getElementById('mPrice').value = p?.price || '';
+    document.getElementById('mStock').value = p?.stock ?? '';
+    document.getElementById('mEmoji').value = p?.emoji || '👟';
+    document.getElementById('mBadge').value = p?.badge || '';
+    document.getElementById('mColor').value = p?.color || '#141414';
+    document.getElementById('mDesc').value = p?.desc || '';
+    document.getElementById('productModal').classList.add('open');
+  }
+
+  function closeModal() { document.getElementById('productModal').classList.remove('open'); }
+
+  function editProduct(id) { openModal(Products.byId(id)); }
+
+  function saveProduct() {
+    const name = document.getElementById('mName').value.trim();
+    const price = parseFloat(document.getElementById('mPrice').value);
+    const stock = parseInt(document.getElementById('mStock').value);
+    if (!name || isNaN(price) || isNaN(stock)) { adminToast('Please fill all required fields','error'); return; }
+
+    const id = document.getElementById('editId').value;
+    const product = {
+      id: id || Products.genId(),
+      name, price, stock,
+      category: document.getElementById('mCategory').value,
+      emoji: document.getElementById('mEmoji').value || '👟',
+      badge: document.getElementById('mBadge').value.trim(),
+      color: document.getElementById('mColor').value,
+      desc: document.getElementById('mDesc').value.trim(),
+    };
+
+    if (id) { Products.update(product); adminToast('Product updated!'); }
+    else {
+      Products.add(product);
+      ga('product_added_by_admin', { item_id: product.id, item_name: product.name });
+      adminToast('Product added!');
+    }
+    closeModal();
+    renderTable();
+  }
+
+  function promptDelete(id, name) {
+    deleteId = id;
+    document.getElementById('deleteName').textContent = name;
+    document.getElementById('deleteModal').classList.add('open');
+  }
+  function closeDelete() { document.getElementById('deleteModal').classList.remove('open'); deleteId = null; }
+  function confirmDelete() {
+    if (deleteId) { Products.delete(deleteId); adminToast('Product deleted.'); closeDelete(); renderTable(); }
+  }
+
+  renderTable();
+</script>
+</body>
+</html>

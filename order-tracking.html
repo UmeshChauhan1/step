@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L1QE9XKPJW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-L1QE9XKPJW');
+</script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Order Tracking — StepStyle</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .tracking-container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+    .order-header { background: var(--gray); padding: 2rem; border-radius: 12px; border: 1px solid var(--gray-mid); margin-bottom: 2rem; }
+    .order-id-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .order-id { font-size: 1.5rem; font-weight: 600; color: var(--green); }
+    .order-status { padding: .5rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 1rem; }
+    .status-pending { background: #ffaa00; color: var(--black); }
+    .status-confirmed { background: #4daaff; color: var(--white); }
+    .status-processing { background: #aa4dff; color: var(--white); }
+    .status-shipped { background: #4dff4d; color: var(--black); }
+    .status-delivered { background: var(--green); color: var(--black); }
+    .order-details { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    .detail-item { }
+    .detail-label { font-size: .85rem; color: var(--gray-light); }
+    .detail-value { font-weight: 600; margin-top: .25rem; }
+    .tracking-section { background: var(--gray); padding: 2rem; border-radius: 12px; border: 1px solid var(--gray-mid); margin-bottom: 2rem; }
+    .tracking-section h2 { margin-bottom: 2rem; font-size: 1.1rem; }
+    .timeline { position: relative; padding: 1rem 0; }
+    .timeline-item { display: flex; margin-bottom: 2rem; position: relative; padding-left: 3rem; }
+    .timeline-item.completed .timeline-dot { background: var(--green); box-shadow: 0 0 0 4px rgba(45, 214, 87, 0.2); }
+    .timeline-item.completed .timeline-line { background: var(--green); }
+    .timeline-item.current .timeline-dot { background: var(--green); box-shadow: 0 0 0 8px rgba(45, 214, 87, 0.3); animation: pulse 2s infinite; }
+    .timeline-item.pending .timeline-dot { background: var(--gray-mid); }
+    .timeline-dot { position: absolute; left: 0; top: 0; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--gray-mid); border: 3px solid var(--gray); }
+    .timeline-line { position: absolute; left: .75rem; top: 1.5rem; width: 2px; height: 3.5rem; background: var(--gray-mid); }
+    .timeline-item:last-child .timeline-line { display: none; }
+    .timeline-content h3 { font-weight: 600; margin-bottom: .25rem; }
+    .timeline-content p { font-size: .85rem; color: var(--gray-light); margin: .25rem 0; }
+    .timeline-content .date { font-size: .8rem; color: var(--gray-light); margin-top: .5rem; }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 8px rgba(45, 214, 87, 0.3); } 50% { box-shadow: 0 0 0 12px rgba(45, 214, 87, 0.1); } }
+    .items-section { background: var(--gray); padding: 2rem; border-radius: 12px; border: 1px solid var(--gray-mid); margin-bottom: 2rem; }
+    .items-section h2 { margin-bottom: 1rem; font-size: 1.1rem; }
+    .item-row { display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid var(--gray-mid); }
+    .item-row:last-child { border-bottom: none; }
+    .item-info { flex: 1; }
+    .item-info p { margin: .25rem 0; }
+    .item-name { font-weight: 600; }
+    .item-details { font-size: .85rem; color: var(--gray-light); }
+    .item-price { text-align: right; font-weight: 600; }
+    .pricing-table { background: var(--gray-mid); padding: 1.5rem; border-radius: 8px; margin-top: 1.5rem; }
+    .pricing-row { display: flex; justify-content: space-between; margin: .75rem 0; }
+    .pricing-row.total { border-top: 1px solid var(--gray-mid); padding-top: 1rem; margin-top: 1rem; font-size: 1.1rem; font-weight: 600; }
+    .shipping-details { background: var(--gray-mid); padding: 1.5rem; border-radius: 8px; margin-top: 1.5rem; }
+    .shipping-details h3 { margin-bottom: 1rem; font-weight: 600; }
+    .shipping-details p { margin: .5rem 0; font-size: .9rem; }
+    .shipping-details .tracking-num { color: var(--green); font-weight: 600; }
+    .action-buttons { display: flex; gap: 1rem; margin-top: 2rem; }
+    .btn { padding: .75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn-primary { background: var(--green); color: var(--black); }
+    .btn-primary:hover { background: #2dd657; }
+    .btn-secondary { background: var(--gray-mid); color: var(--white); border: 1px solid var(--gray-mid); }
+    .btn-secondary:hover { border-color: var(--green); }
+    .btn-danger { background: #ff4d4d; color: var(--white); }
+    .btn-danger:hover { background: #ff3333; }
+    @media (max-width: 768px) { .order-details { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="logo" href="index.html">STEP<span>STYLE</span></a>
+  <ul class="nav-links"><li><a href="index.html">Home</a></li><li><a href="shop.html">Shop</a></li><li><a href="account.html">Account</a></li></ul>
+  <div class="nav-icons"><button class="hamburger" id="hamburger"><span></span><span></span><span></span></button></div>
+</nav>
+<ul class="mobile-nav" id="mobileNav"><li><a href="index.html">Home</a></li><li><a href="shop.html">Shop</a></li><li><a href="account.html">Account</a></li></ul>
+
+<div class="tracking-container">
+  <h1>Order Tracking</h1>
+  
+  <!-- Order Header -->
+  <div class="order-header">
+    <div class="order-id-section">
+      <div>
+        <div class="order-id" id="orderId">SS-20250311001</div>
+        <p style="color:var(--gray-light);margin-top:.5rem" id="orderDate">Placed on March 11, 2025</p>
+      </div>
+      <div class="order-status" id="orderStatus">Shipped</div>
+    </div>
+    
+    <div class="order-details">
+      <div class="detail-item">
+        <div class="detail-label">Total Amount</div>
+        <div class="detail-value" id="orderTotal">₹8,499</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Estimated Delivery</div>
+        <div class="detail-value" id="estimatedDelivery">March 16, 2025</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Tracking Number</div>
+        <div class="detail-value" id="trackingNum">SF1234567890IN</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Tracking Timeline -->
+  <div class="tracking-section">
+    <h2>Order Status</h2>
+    <div class="timeline" id="timeline"></div>
+  </div>
+  
+  <!-- Order Items -->
+  <div class="items-section">
+    <h2>Order Items</h2>
+    <div id="itemsList"></div>
+    
+    <div class="pricing-table">
+      <div class="pricing-row">
+        <span>Subtotal</span>
+        <span id="subtotal">₹7,499</span>
+      </div>
+      <div class="pricing-row">
+        <span>Shipping</span>
+        <span id="shipping">₹150</span>
+      </div>
+      <div class="pricing-row">
+        <span>Tax (8%)</span>
+        <span id="tax">₹600</span>
+      </div>
+      <div class="pricing-row total">
+        <span>Total</span>
+        <span id="total">₹8,249</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Shipping Details -->
+  <div class="shipping-details" id="shippingDetails"></div>
+  
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <button class="btn btn-secondary" onclick="window.history.back()">← Back to Orders</button>
+    <button class="btn btn-primary" id="cancelBtn">Cancel Order</button>
+    <button class="btn btn-primary" id="returnBtn" style="display:none">Request Return</button>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/core.js"></script>
+<script>
+  // Check auth
+  if (!window.checkAuth()) {
+    window.location.href = 'login.html';
+  }
+  
+  const orderIdParam = new URLSearchParams(window.location.search).get('id');
+  
+  if (!orderIdParam) {
+    showToast('Order not found', 'error');
+    window.location.href = 'account.html';
+  }
+  
+  async function loadOrder() {
+    try {
+      const order = await APIs.orders.getById(orderIdParam);
+      
+      // Set header info
+      document.getElementById('orderId').textContent = order.orderId;
+      document.getElementById('orderDate').textContent = `Placed on ${new Date(order.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}`;
+      document.getElementById('orderStatus').textContent = order.status;
+      document.getElementById('orderStatus').className = `order-status status-${order.status.toLowerCase()}`;
+      document.getElementById('orderTotal').textContent = `₹${order.total.toLocaleString('en-IN')}`;
+      document.getElementById('estimatedDelivery').textContent = order.estimatedDeliveryDate ? new Date(order.estimatedDeliveryDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD';
+      document.getElementById('trackingNum').textContent = order.trackingNumber || 'Not available yet';
+      
+      // Build timeline
+      const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+      const statusLabels = {
+        pending: 'Order Placed',
+        confirmed: 'Payment Confirmed',
+        processing: 'Processing',
+        shipped: 'Shipped',
+        delivered: 'Delivered'
+      };
+      
+      const timeline = document.getElementById('timeline');
+      timeline.innerHTML = '';
+      
+      statuses.forEach((status) => {
+        const div = document.createElement('div');
+        const statusHistory = order.statusHistory || [];
+        const historyEntry = statusHistory.find(h => h.status === status);
+        
+        let className = 'timeline-item pending';
+        if (historyEntry) {
+          className = 'timeline-item completed';
+        } else if (status === order.status.toLowerCase()) {
+          className = 'timeline-item current';
+        }
+        
+        div.className = className;
+        div.innerHTML = `
+          <div class="timeline-dot"></div>
+          <div class="timeline-line"></div>
+          <div class="timeline-content">
+            <h3>${statusLabels[status]}</h3>
+            <p>${historyEntry?.note || ''}</p>
+            ${historyEntry ? `<div class="date">${new Date(historyEntry.timestamp).toLocaleDateString()} ${new Date(historyEntry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>` : ''}
+          </div>
+        `;
+        timeline.appendChild(div);
+      });
+      
+      // Items list
+      const itemsList = document.getElementById('itemsList');
+      itemsList.innerHTML = '';
+      
+      (order.items || []).forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'item-row';
+        div.innerHTML = `
+          <div class="item-info">
+            <p class="item-name">${item.productId?.name || 'Product'}</p>
+            <p class="item-details">Size: ${item.size || 'N/A'} | Color: ${item.color || 'N/A'}</p>
+            <p class="item-details">Quantity: ${item.quantity}</p>
+          </div>
+          <div class="item-price">₹${(item.price * item.quantity).toLocaleString('en-IN')}</div>
+        `;
+        itemsList.appendChild(div);
+      });
+      
+      // Pricing
+      document.getElementById('subtotal').textContent = `₹${order.subtotal.toLocaleString('en-IN')}`;
+      document.getElementById('shipping').textContent = `₹${(order.shipping || 0).toLocaleString('en-IN')}`;
+      document.getElementById('tax').textContent = `₹${Math.round(order.subtotal * 0.08).toLocaleString('en-IN')}`;
+      document.getElementById('total').textContent = `₹${order.total.toLocaleString('en-IN')}`;
+      
+      // Shipping details
+      if (order.shippingAddress) {
+        const addr = order.shippingAddress;
+        document.getElementById('shippingDetails').innerHTML = `
+          <h3>Delivery Address</h3>
+          <p><strong>${addr.name || order.userId?.name}</strong></p>
+          <p>${addr.line1}, ${addr.line2 || ''}</p>
+          <p>${addr.city}, ${addr.state} ${addr.zip}</p>
+          <p style="margin-top:1rem"><strong>Tracking Information</strong></p>
+          <p>Carrier: ${order.shippingMethod || 'Standard'}</p>
+          <p>Tracking Number: <span class="tracking-num">${order.trackingNumber || 'Not available yet'}</span></p>
+          ${order.estimatedDeliveryDate ? `<p>Estimated Delivery: ${new Date(order.estimatedDeliveryDate).toLocaleDateString()}</p>` : ''}
+        `;
+      }
+      
+      // Action buttons
+      if (order.status === 'pending' || order.status === 'confirmed' || order.status === 'processing') {
+        document.getElementById('cancelBtn').onclick = async () => {
+          if (!confirm('Are you sure you want to cancel this order?')) return;
+          try {
+            await APIs.orders.cancel(orderIdParam);
+            showToast('Order cancelled!', 'success');
+            setTimeout(() => window.location.reload(), 500);
+          } catch (err) {
+            showToast('Failed to cancel order: ' + err.message, 'error');
+          }
+        };
+      } else {
+        document.getElementById('cancelBtn').style.display = 'none';
+      }
+      
+      if (order.status === 'delivered') {
+        document.getElementById('returnBtn').style.display = 'inline-block';
+        document.getElementById('returnBtn').onclick = async () => {
+          if (!confirm('Request return for this order?')) return;
+          try {
+            await APIs.orders.requestReturn(orderIdParam);
+            showToast('Return request submitted!', 'success');
+            setTimeout(() => window.location.reload(), 500);
+          } catch (err) {
+            showToast('Failed to submit return request: ' + err.message, 'error');
+          }
+        };
+      }
+      
+    } catch (err) {
+      showToast('Failed to load order: ' + err.message, 'error');
+    }
+  }
+  
+  loadOrder();
+</script>
+</body>
+</html>

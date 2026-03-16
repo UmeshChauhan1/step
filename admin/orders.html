@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Orders — StepStyle Admin</title>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L1QE9XKPJW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-L1QE9XKPJW');
+</script>
+  <link rel="stylesheet" href="../css/admin.css"/>
+</head>
+<body>
+<div id="sidebarMount"></div>
+<div class="admin-layout">
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <span class="topbar-title">Orders</span>
+      </div>
+      <div class="topbar-right"><span class="topbar-time" id="topbarTime"></span></div>
+    </div>
+    <div class="admin-content">
+      <!-- Stats row -->
+      <div class="stats-grid" id="orderStats" style="margin-bottom:1.5rem"></div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">All Orders</span>
+          <div class="panel-actions">
+            <input type="text" class="admin-search" id="searchInput" placeholder="Search orders…" oninput="renderOrders()"/>
+            <select class="status-select" id="filterStatus" onchange="renderOrders()">
+              <option value="">All Status</option>
+              <option>Pending</option><option>Shipped</option><option>Delivered</option><option>Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="admin-table">
+            <thead><tr><th>Order ID</th><th>Customer</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="ordersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal" style="width:580px">
+    <div class="modal-header">
+      <h3>Order Details</h3>
+      <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="orderModalBody"></div>
+    <div class="modal-footer">
+      <button class="btn-sm btn-secondary" onclick="closeOrderModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/core.js"></script>
+<script src="sidebar.js"></script>
+<script src="admin.js"></script>
+<script>
+  requireAuth();
+  document.getElementById('sidebarMount').innerHTML = buildSidebar('orders');
+
+  function renderStats() {
+    const orders = Orders.all();
+    const statuses = ['Pending','Shipped','Delivered','Cancelled'];
+    document.getElementById('orderStats').innerHTML = [
+      { label:'Total Orders', value: orders.length, icon:'📦' },
+      ...statuses.map(s => ({ label: s, value: orders.filter(o=>o.status===s).length, icon: {Pending:'⏳',Shipped:'🚚',Delivered:'✅',Cancelled:'❌'}[s] })),
+      { label:'Total Revenue', value: fmt(Orders.totalRevenue()), icon:'💰' },
+    ].map(s=>`<div class="stat-card"><div class="stat-label">${s.label}</div><div class="stat-value">${s.value}</div><div class="stat-icon">${s.icon}</div></div>`).join('');
+  }
+
+  function renderOrders() {
+    const q = (document.getElementById('searchInput').value||'').toLowerCase();
+    const status = document.getElementById('filterStatus').value;
+    let orders = Orders.all();
+    if (status) orders = orders.filter(o=>o.status===status);
+    if (q) orders = orders.filter(o =>
+      o.id.toLowerCase().includes(q) ||
+      (o.customer?.name||'').toLowerCase().includes(q) ||
+      (o.customer?.email||'').toLowerCase().includes(q)
+    );
+
+    const tbody = document.getElementById('ordersTable');
+    if (orders.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No orders found. <a href="../shop.html" style="color:var(--green)">Place a test order</a></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = orders.map(o => `
+      <tr>
+        <td style="font-family:'Bebas Neue';font-size:.95rem;color:var(--green)">#${o.id}</td>
+        <td>
+          <strong style="font-size:.84rem">${o.customer?.name||'—'}</strong>
+          <div style="font-size:.72rem;color:var(--muted)">${o.customer?.email||''}</div>
+        </td>
+        <td style="font-size:.78rem;color:var(--muted)">${fmtDate(o.date)}</td>
+        <td style="font-size:.82rem">${o.items?.map(i=>i.name+'×'+i.qty).join(', ')||'—'}</td>
+        <td style="color:var(--green);font-family:'Bebas Neue';font-size:1.05rem">${fmt(o.total)}</td>
+        <td>
+          <select class="status-select" onchange="updateStatus('${o.id}',this.value)" style="color:${statusColor(o.status)}">
+            ${['Pending','Shipped','Delivered','Cancelled'].map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <button class="btn-sm btn-secondary" onclick="viewOrder('${o.id}')">View</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  function statusColor(s) { return {Pending:'#ff9a3c',Shipped:'#3ca9ff',Delivered:'#2dff6e',Cancelled:'#ff4d4d'}[s]||'#666'; }
+
+  function updateStatus(id, status) {
+    const order = Orders.byId(id);
+    if (!order) return;
+    Orders.update({ ...order, status });
+    ga('order_status_updated', { order_id: id, new_status: status });
+    adminToast('Status updated to ' + status);
+    renderStats();
+    renderOrders();
+  }
+
+  function viewOrder(id) {
+    const o = Orders.byId(id);
+    if (!o) return;
+    document.getElementById('orderModalBody').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem">
+        <div><div style="font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem">Order ID</div><div style="font-family:'Bebas Neue';color:var(--green);font-size:1.1rem">#${o.id}</div></div>
+        <div><div style="font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem">Date</div><div style="font-size:.85rem">${fmtDate(o.date)}</div></div>
+        <div><div style="font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem">Status</div>${statusBadge(o.status)}</div>
+        <div><div style="font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem">Total</div><div style="font-family:'Bebas Neue';color:var(--green);font-size:1.2rem">${fmt(o.total)}</div></div>
+      </div>
+      <div style="background:var(--bg);padding:1rem;margin-bottom:1rem;border:1px solid var(--border)">
+        <div style="font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem">Customer</div>
+        <div style="font-size:.86rem"><strong>${o.customer?.name||'—'}</strong></div>
+        <div style="font-size:.8rem;color:var(--muted)">${o.customer?.email||''}</div>
+        <div style="font-size:.8rem;color:var(--muted)">${o.customer?.phone||''}</div>
+        <div style="font-size:.8rem;color:var(--muted);margin-top:.3rem">${o.customer?.address||''}</div>
+      </div>
+      <div style="font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem">Items</div>
+      ${(o.items||[]).map(i=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.84rem">
+          <span>${i.emoji||'👟'} ${i.name} <span style="color:var(--muted)">×${i.qty}</span></span>
+          <span style="color:var(--green)">${fmt(i.price * i.qty)}</span>
+        </div>`).join('')}
+      <div style="display:flex;justify-content:space-between;padding-top:.8rem;font-size:.84rem;color:var(--muted)"><span>Subtotal</span><span>${fmt(o.subtotal)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:.84rem;color:var(--muted)"><span>Shipping</span><span>${fmt(o.shipping)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:.84rem;color:var(--muted)"><span>Tax</span><span>${fmt(o.tax)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding-top:.6rem;font-family:'Bebas Neue';font-size:1.2rem"><span>Total</span><span style="color:var(--green)">${fmt(o.total)}</span></div>`;
+    document.getElementById('orderModal').classList.add('open');
+  }
+  function closeOrderModal() { document.getElementById('orderModal').classList.remove('open'); }
+
+  renderStats();
+  renderOrders();
+</script>
+</body>
+</html>
